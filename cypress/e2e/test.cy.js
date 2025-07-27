@@ -57,4 +57,30 @@ describe('Latest Features Until Cypress 14', () => {
 
         // https://github.com/cypress-io/cypress/issues/6646
     })
+
+    it('Cypress Cloud', ()=>{
+        // https://www.cypress.io/cloud
+
+        // Set the projectId in the cypress.config.ts file
+        // Run your tests in your favorite CI provider with a record key: 
+        // For instance: npx cypress run --record --key {{your-record-key}}
+        // Also, you can set the record key in your environment: export CYPRESS_RECORD_KEY={{your key}}
+        // Then, you just need to add the --record flag to your cypress run command
+
+        // Features I wanted to review: 
+        // Test Replay
+        // Wind back the clock to any point in an application's execution and see exactly what it was doing during the point of failure. Inspect the DOM, network events, and console logs of your application from your tests exactly as they ran in CI.
+
+
+        // Branch Review
+        // Understand whether you've introduced or resolved failed, flaky, or pending tests. Analyze the impact of your branch's latest pull request by reviewing the before-and-after of test suite changes side-by-side.
+
+        // Failure Debugging
+        // Every test run error is captured, grouped, and accompanied by a detailed stack trace output that gives you the information you need to identify the exact point of failure in your application.
+
+        // Visualize Coverage
+        // UI Coverage provides a visual overview of test coverage across every page and component of your app, offering clear insights into uncovered areas that everyone can understand.
+
+        // Automated accessibility checks on every test
+    })
 })
