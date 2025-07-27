@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 245, 245, 245;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #f3f3f3;
+  font-family: "Arial", sans-serif;
+}
+
+@layer base {
+  h1 {
+    @apply text-2xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-bold;
+  }
+  h3 {
+    @apply text-lg font-bold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium py-1 px-4 rounded-sm border border-yellow-600 shadow-sm transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-1 px-4 rounded-sm border border-gray-400 shadow-sm transition-colors;
+  }
+
+  .input-field {
+    @apply w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500;
+  }
+
+  .card {
+    @apply bg-white rounded-sm shadow-sm p-4 border border-gray-200;
+  }
+
+  .amazon-header {
+    @apply bg-gray-900 text-white;
+  }
+
+  .amazon-search {
+    @apply bg-yellow-300 hover:bg-yellow-400 text-black;
+  }
+
+  .amazon-footer {
+    @apply bg-gray-900 text-white;
+  }
+
+  .pagination-btn {
+    @apply px-3 py-1 border border-gray-300 bg-white hover:bg-gray-100;
+  }
+
+  .pagination-btn-active {
+    @apply px-3 py-1 border border-yellow-500 bg-yellow-300;
+  }
+
+  /* Login page specific styles */
+  .login-divider {
+    @apply flex items-center text-center;
+  }
+
+  .login-divider::before,
+  .login-divider::after {
+    @apply flex-1 border-t border-gray-300;
+    content: "";
+  }
+
+  .login-divider::before {
+    @apply mr-3;
+  }
+
+  .login-divider::after {
+    @apply ml-3;
+  }
+}
