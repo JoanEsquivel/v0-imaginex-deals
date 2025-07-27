@@ -16,6 +16,10 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+beforeEach(() => {
+    cy.visit('http://localhost:3000')
+})
+
 afterEach(function () {
     if (this.currentTest.state === 'failed') {
       Cypress.stop()

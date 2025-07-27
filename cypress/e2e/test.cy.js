@@ -1,7 +1,5 @@
-describe('My First Test', () => {
-    beforeEach(() => {
-        cy.visit('http://localhost:3000')
-    })
+describe('Latest Features Until Cypress 14', () => {
+
     it('Cypress Ambassador Status',()=>{
        /* 
           Wed, Dec 13, 2023, 
@@ -47,5 +45,16 @@ describe('My First Test', () => {
         // WebDriver BiDi (Bidirectional) is an emerging, cross-browser automation protocol that
         // combines the best aspects of WebDriver Classic and the Chrome DevTools Protocol (CDP).
         // With bi-directional communication built-in, it delivers fast, efficient interactions and provides low-level control over browser automation.
+    })
+    it('--defaultBrowser testing', ()=>{
+
+        // https://docs.cypress.io/app/references/configuration#Browser
+        // Added new defaultBrowser configuration option to specify the default browser to launch.
+        // This option only affects the first browser launch; changing this option after the browser
+        // is already launched will have no effect. Addresses #6646.
+
+        // Check the cypress.config.ts file and change the defaultBrowser to 'electron'
+
+        // https://github.com/cypress-io/cypress/issues/6646
     })
 })
