@@ -83,4 +83,16 @@ test.describe('Login & Logout Scenarios', () => {
       check my example under utils/e2e.ts -> loginAndLogout() 
   */
 
+  /*
+    9- --only-changed cli option
+    New CLI option --only-changed will only run test files that have been changed since the last git commit or from a specific git "ref". 
+    This will also run all test files that import any changed files.
+
+    # Only run test files with uncommitted changes
+    npx playwright test --only-changed
+
+    # Only run test files changed relative to the "main" branch
+    npx playwright test --only-changed=main
+  */
+
 });
