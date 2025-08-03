@@ -93,6 +93,44 @@ test.describe('Login & Logout Scenarios', () => {
 
     # Only run test files changed relative to the "main" branch
     npx playwright test --only-changed=main
+
+    How to test this?
+    Just create a copy of example.spec.ts and name it example2.spec.ts
+    Then run the test with the new option:
+      pnpm exec playwright test --only-changed
+  */
+
+  /*
+    10- Added "previous" and "next" buttons to the HTML report to quickly switch between test cases.
+  */
+
+  /*
+    11- UI Mode: New "Copy as cURL" and "Copy as fetch" buttons for requests in the network tab.
+
+  */
+
+  /*
+    12- --last-failed CLI option to for running only tests that failed in the previous run.
+  */
+
+  /*
+    13- Clock
+    Utilizing the new Clock API allows to manipulate and control time within tests to verify time-related behavior. This API covers many common scenarios, including:
+
+    // Initialize clock and let the page load naturally.
+    await page.clock.install({ time: new Date('2024-02-02T08:00:00') });
+    await page.goto('http://localhost:3333');
+
+    // Pretend that the user closed the laptop lid and opened it again at 10am,
+    // Pause the time once reached that point.
+    await page.clock.pauseAt(new Date('2024-02-02T10:00:00'));
+
+    // Assert the page state.
+    await expect(page.getByTestId('current-time')).toHaveText('2/2/2024, 10:00:00 AM');
+
+    // Close the laptop lid again and open it at 10:30am.
+    await page.clock.fastForward('30:00');
+    await expect(page.getByTestId('current-time')).toHaveText('2/2/2024, 10:30:00 AM');
   */
 
 });
