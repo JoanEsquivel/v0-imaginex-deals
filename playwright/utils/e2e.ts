@@ -47,11 +47,6 @@ export class E2E {
             await test.step('a step', async () => {
                 // This step can time out separately from the test
               }, { timeout: 1000 });
-        });
-
-
-
-
-      
+        });      
     }
 }
