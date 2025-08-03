@@ -8,7 +8,7 @@ export class ProductsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.signOutButton = page.getByRole('button', { name: 'Sign Out' });
+    this.signOutButton = page.getByRole('button', { name: 'Sign Out' }).describe('sign out button');
   }
 
   async waitLoad() {

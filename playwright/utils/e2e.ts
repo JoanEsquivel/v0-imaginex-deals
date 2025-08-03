@@ -27,6 +27,31 @@ export class E2E {
             await this.loginPage.waitLoad();
         });
         expect(this.page.url()).toContain(this.loginPage.url);
+
+        // This is out of the scope of the test, I am just testing different features
+        await test.step('Testing the step skip', async step => {
+            await test.step('before running step', async () => {
+                // Normal step
+              });
+      
+              await test.step.skip('not yet ready', async () => {
+                // This step is skipped
+              });
+      
+              await test.step('after running step', async () => {
+                // This step still runs even though the previous one was skipped
+              });
+        });
+
+        await test.step('Testing the step timeout', async step => {
+            await test.step('a step', async () => {
+                // This step can time out separately from the test
+              }, { timeout: 1000 });
+        });
+
+
+
+
       
     }
 }
