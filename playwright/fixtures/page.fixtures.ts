@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 
-import { LoginPage } from '@pages/loging';
+import { LoginPage } from '@/playwright/pages/login';
 import { ProductsPage } from '@pages/products';
 
 // Declare page fixtures

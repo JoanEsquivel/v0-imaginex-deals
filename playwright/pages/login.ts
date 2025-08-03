@@ -11,7 +11,7 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.username = page.getByRole('textbox', { name: 'Username' }).describe('username input');
+    this.username = page.getByRole('textbox', { name: 'Username' });
     this.password = page.getByRole('textbox', { name: 'Password' }).describe('password input');
     this.signInBtn = page.getByRole('button', { name: 'Sign In' }).describe('sign in button');
     this.errorContainer = page.locator('[data-testid="login-error"]').describe('error container');
