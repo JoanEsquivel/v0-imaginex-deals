@@ -22,7 +22,8 @@
       "@/*": ["./*"],
       "@fixtures/*": ["./playwright/fixtures/*"],
       "@pages/*": ["./playwright/pages/*"],
-      "@utils/*": ["./playwright/utils/*"]
+      "@utils/*": ["./playwright/utils/*"],
+      "@data/*": ["./playwright/data/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
