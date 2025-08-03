@@ -62,7 +62,7 @@ export default function LoginPage() {
               <input
                 type="text"
                 id="username"
-                data-testid="login-username-error"
+                data-testid="login-username"
                 className="input-field"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
