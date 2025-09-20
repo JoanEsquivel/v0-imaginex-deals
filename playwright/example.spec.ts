@@ -8,8 +8,7 @@ import data from '@/playwright/data/testData.json';
 test.describe('Login & Logout Scenarios', () => {
 
   test('should_not_login_with_invalid_credentials', async ({ loginPage }) => {
-    // unnecessary comment
-    await loginPage.loads();
+    await loginPage.load();
     await loginPage.submitSignInForm(data.username, data.incorrectPassword);
     await expect(loginPage.errorContainer).toHaveText(/There was a problem.*Invalid username or password/);
   })
