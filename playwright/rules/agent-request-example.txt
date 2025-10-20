@@ -1,0 +1,7 @@
+Use the rules under playwright/rules to understand how to implement new tests
+
+Use the local webserver: localhost:3001 & the playwright mcp server to create new test cases
+
+Create a new test for the header-functionaliity 
+
+I need to check that the option in the header "Returns & Orders" redirects the user to cart/orders page.
