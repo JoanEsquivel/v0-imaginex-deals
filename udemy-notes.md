@@ -126,3 +126,37 @@ pnpm exec playwright test --ui
 ```
 
 - Run it without the UI mode and check the steps documented in the report
+
+## Let's keep the username, passwords, and sensitive data as secrets
+- Run the command ```pnpm add dotenv ```
+- Create a '.env' file in the root directory and add the sensitive data: 
+```
+SUCCESSFUL_USERNAME="test_user"
+SUCCESSFUL_PASSWORD="test_pass"
+```
+- Let's extend the new env variables as types in node. 
+- Create a 'types' folder under the 'playwright' folder
+- Create a 'indext.ts' file under the 'types' folder
+- In the 'indext.ts' file put: 
+```
+  declare namespace NodeJS {
+    interface ProcessEnv {
+      SUCCESSFUL_USERNAME: string;
+      SUCCESSFUL_PASSWORD: string;
+    }
+  }
+```
+- Let's go back to our test and include: 
+
+```
+import 'dotenv/config'
+
+const secrets: NodeJS.ProcessEnv = process.env;
+
+```
+- And change the hardcoded values for the secrets:
+```
+    await loginPage.submitSignInForm(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+
+```
+- Now we have the sensitive information placed in an .env file, and make sure you don't version it to keep the information safe.
