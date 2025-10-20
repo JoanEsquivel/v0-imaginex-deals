@@ -900,3 +900,93 @@ test.describe('Header Functionality', () => {
 ```
 
 - That's it!
+
+
+## How to run our work on CI? 
+
+Let's first of all create the secrets.
+
+- Go to the repo
+- Settings -> Secrets and Variables -> Repository Secrets
+- Create one by one your secrets
+- Modify the playwright.config.ts for verbose logs in CI
+```
+ reporter: process.env.CI
+    ? [
+      ['list'], // Shows test names and status in CI
+      ['blob'], // For merging shard reports
+      ['github'], // GitHub Actions annotations
+    ]
+    : 'html',
+```
+- The create your YML file to get your workflow running:
+```
+name: Playwright Tests for Udemy Course
+on:
+  push:
+    branches: [ pw-udemy-course-history ]
+  pull_request:
+    branches: [ pw-udemy-course-history ]
+  workflow_dispatch:
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm install -g pnpm && pnpm install
+    - name: Install Playwright Browsers
+      run: pnpm exec playwright install --with-deps
+    - name: Run Playwright tests with shard configuration
+      run: pnpm exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --reporter=list,blob,github
+      env:
+          SUCCESSFUL_USERNAME: ${{ secrets.SUCCESSFUL_USERNAME }}
+          SUCCESSFUL_PASSWORD: ${{ secrets.SUCCESSFUL_PASSWORD }}
+          FAIL_USERNAME: ${{ secrets.FAIL_USERNAME }}
+          FAIL_PASSWORD: ${{ secrets.FAIL_PASSWORD }}
+    - name: Upload blob report to GitHub Actions Artifacts
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: blob-report-${{ matrix.shardIndex }}
+        path: blob-report
+        retention-days: 1
+
+  merge-reports:
+    if: ${{ !cancelled() }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm install -g pnpm && pnpm install
+    - name: Download blob reports from GitHub Actions Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-blob-reports
+        pattern: blob-report-*
+        merge-multiple: true
+    - name: Merge into HTML Report
+      run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports 
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+```
+
+- Your should see a clean execution :)
