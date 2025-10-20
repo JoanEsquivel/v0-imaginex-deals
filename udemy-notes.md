@@ -1195,20 +1195,68 @@ async fillShippingForm(name: string, email: string, address: string) {
 }
 ```
 
+## EXISTING APPLICATION CONTEXT
+
+### Current Application Pages & Page Objects
+The application contains the following pages with their corresponding Playwright page object status:
+
+**Implemented Page Objects** (in `/playwright/pages/`):
+- `LoginPage` (`login.ts`) → `/login` route
+- `ProductsPage` (`products.ts`) → `/products` route  
+- `CartPage` (`cart.ts`) → `/cart` route
+- `CheckoutPage` (`checkout.ts`) → `/checkout` route
+- `HeaderPage` (`header.ts`) → Navigation component
+
+**Application Pages Without Page Objects** (in `/app/`):
+- **Orders Page** (`/orders`) → Displays order history, similar to cart functionality
+- **Root Page** (`/`) → Home/landing page
+
+### Pre-Implementation Analysis (MANDATORY)
+Before creating ANY new page object, you MUST:
+
+1. **AUDIT EXISTING**: Review all page objects in `/playwright/pages/` directory
+2. **CHECK SIMILARITY**: Identify if similar functionality already exists
+   - Example: Orders page functionality overlaps with Cart page (both handle items, totals, navigation)
+   - Example: Different checkout steps might reuse existing CheckoutPage methods
+3. **EVALUATE REUSE**: Determine if existing page objects can be extended rather than duplicated
+4. **ASSESS COMPLETENESS**: Check if existing page objects have missing methods that your test needs
+
+### Functionality Overlap Examples
+- **Orders & Cart**: Both display items, prices, totals, and navigation to other pages
+- **Login & Checkout**: Both may have form validation and error handling patterns
+- **Products & Orders**: Both may have "add to cart" or "buy again" functionality
+- **Header Navigation**: Shared across all pages, centralized in HeaderPage
+
+### Implementation Status Assumptions (CRITICAL)
+**DO NOT ASSUME** that all page objects are fully implemented:
+- Some page objects may be missing essential methods (`load()`, `waitLoad()`)
+- Locators might be incomplete or need additional elements
+- Page objects may not cover all functionality available on the actual page
+- Always verify current implementation before building upon it
+
+**VALIDATION PROCESS**:
+1. Read the existing page object file completely
+2. Compare against the actual application page requirements
+3. Identify missing methods, locators, or functionality
+4. Extend existing page objects rather than creating duplicates
+
 ## AGENT IMPLEMENTATION GUIDELINES
 
 ### When Adding New Tests:
-1. **IDENTIFY**: Determine if new page objects are needed
-2. **EXTEND**: Add new page classes following the established pattern
-3. **FIXTURE**: Register new page objects in page.fixtures.ts
-4. **DATA**: Add any new test data to appropriate JSON files
-5. **WORKFLOW**: Consider if E2E class needs new methods
+1. **AUDIT FIRST**: Check existing page objects for similar functionality (MANDATORY)
+2. **IDENTIFY GAPS**: Determine if new page objects are truly needed or if existing ones can be extended
+3. **REUSE PATTERNS**: Extend existing page classes when functionality overlaps
+4. **CREATE NEW**: Only create new page objects when functionality is genuinely unique
+5. **FIXTURE**: Register new/modified page objects in page.fixtures.ts
+6. **DATA**: Add any new test data to appropriate JSON files
+7. **WORKFLOW**: Consider if E2E class needs new methods
 
 ### When Modifying Existing Tests:
-1. **PRESERVE**: Maintain existing fixture patterns
-2. **EXTEND**: Add new locators following naming conventions
-3. **STEP**: Wrap all new actions in test.step()
-4. **DESCRIBE**: Add descriptions to new locators
+1. **AUDIT EXISTING**: Always check what methods/locators already exist before adding new ones
+2. **PRESERVE**: Maintain existing fixture patterns
+3. **EXTEND**: Add new locators following naming conventions, avoid duplication
+4. **STEP**: Wrap all new actions in test.step()
+5. **DESCRIBE**: Add descriptions to new locators
 
 ### Error Resolution Priority:
 1. Check locator selectors (prefer data-testid)
@@ -1220,16 +1268,20 @@ async fillShippingForm(name: string, email: string, address: string) {
 ## CRITICAL SUCCESS FACTORS
 
 ### Must-Follow Rules for Agent Success:
-1. **NEVER** instantiate page objects directly in tests
-2. **ALWAYS** use fixture injection pattern
-3. **NEVER** hardcode test data in test files
-4. **ALWAYS** wrap actions in test.step()
-5. **NEVER** use unreliable selectors (avoid CSS classes)
-6. **ALWAYS** add .describe() to locators
-7. **NEVER** skip environment variable setup
-8. **ALWAYS** follow the established directory structure
+1. **ALWAYS** audit existing page objects before creating new ones
+2. **NEVER** duplicate functionality that already exists in other page objects
+3. **NEVER** instantiate page objects directly in tests
+4. **ALWAYS** use fixture injection pattern
+5. **NEVER** hardcode test data in test files
+6. **ALWAYS** wrap actions in test.step()
+7. **NEVER** use unreliable selectors (avoid CSS classes)
+8. **ALWAYS** add .describe() to locators
+9. **NEVER** skip environment variable setup
+10. **ALWAYS** follow the established directory structure
 
 ### Quality Checkpoints:
+- [ ] Existing page objects audited before creating new ones
+- [ ] No duplicate functionality across page objects
 - [ ] All page interactions use Page Object Model
 - [ ] All page objects are injected via fixtures
 - [ ] All actions wrapped in test.step()
@@ -1240,6 +1292,7 @@ async fillShippingForm(name: string, email: string, address: string) {
 - [ ] Import paths use aliases correctly
 
 This framework emphasizes maintainability, readability, and scalability. Adherence to these patterns ensures consistent, reliable, and debuggable test automation.
+
 
 ```
 
