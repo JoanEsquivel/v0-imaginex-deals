@@ -1,0 +1,36 @@
+import { Page, Locator, test } from '@playwright/test';
+
+export class ProductsPage {
+    readonly page: Page;
+    readonly firstProductAddToCartBtn: Locator;
+    readonly firstProductPrice: Locator;
+    readonly firstProductTitle: Locator;
+
+
+    readonly url: string = '/products';
+
+    constructor(page: Page) {
+        this.page = page;
+        this.firstProductAddToCartBtn = page.locator('main [data-testid="product-card"]:nth-child(1) button');
+        this.firstProductPrice = page.locator('main div[data-testid="product-card"]:nth-child(1) span:nth-child(2)')
+        this.firstProductTitle = page.locator('main div[data-testid="product-card"]:nth-child(1) h3')
+    }
+
+    async load() {
+        await test.step('Load products page', async () => {
+            await this.page.goto(this.url);
+        });
+    }
+
+    async waitLoad() {
+        await test.step('Wait for products page to load', async () => {
+            await this.firstProductTitle.waitFor({ state: 'visible' });
+        });
+    }
+
+    async addFirstProductToCart() {
+        await test.step('Clicking on the first product add to cart button', async () => {
+            await this.firstProductAddToCartBtn.click();
+        });
+    }
+}
