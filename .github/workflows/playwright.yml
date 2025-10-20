@@ -20,6 +20,11 @@ jobs:
       run: pnpm exec playwright install --with-deps
     - name: Run Playwright tests
       run: pnpm exec playwright test
+      env:
+          SUCCESSFUL_USERNAME: ${{ secrets.SUCCESSFUL_USERNAME }}
+          SUCCESSFUL_PASSWORD: ${{ secrets.SUCCESSFUL_PASSWORD }}
+          FAIL_USERNAME: ${{ secrets.FAIL_USERNAME }}
+          FAIL_PASSWORD: ${{ secrets.FAIL_PASSWORD }}
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
