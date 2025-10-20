@@ -9,6 +9,11 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -18,16 +23,17 @@ jobs:
       run: npm install -g pnpm && pnpm install
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
-    - name: Run Playwright tests
-      run: pnpm exec playwright test
+    - name: Run Playwright tests with shard configuration
+      run: pnpm exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
       env:
           SUCCESSFUL_USERNAME: ${{ secrets.SUCCESSFUL_USERNAME }}
           SUCCESSFUL_PASSWORD: ${{ secrets.SUCCESSFUL_PASSWORD }}
           FAIL_USERNAME: ${{ secrets.FAIL_USERNAME }}
           FAIL_PASSWORD: ${{ secrets.FAIL_PASSWORD }}
-    - uses: actions/upload-artifact@v4
+    - name: Upload blob report to GitHub Actions Artifacts
       if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+        name: blob-report-${{ matrix.shardIndex }}
+        path: blob-report
+        retention-days: 1
