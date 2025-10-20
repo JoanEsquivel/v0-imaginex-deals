@@ -4,6 +4,7 @@ on:
     branches: [ pw-udemy-course-history ]
   pull_request:
     branches: [ pw-udemy-course-history ]
+  workflow_dispatch:
 jobs:
   test:
     timeout-minutes: 60
