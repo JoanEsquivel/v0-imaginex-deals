@@ -25,7 +25,7 @@ export class E2E {
 
     // Costruct e2e flows using the page objects in one simple class
     async processAPayment(username: string, password: string) {
-        await test.step('Process a successful payment', async () => {
+        await test.step('Process a payment workflow', async () => {
             await test.step('Login and wait for products page', async () => {
                 await this.loginPage.page.waitForTimeout(500); // Small delay
                 await this.loginPage.load();
