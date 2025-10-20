@@ -1,9 +1,9 @@
-name: Playwright Tests
+name: Playwright Tests for Udemy Course
 on:
   push:
-    branches: [ main, master ]
+    branches: [ pw-udemy-course-history ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ pw-udemy-course-history ]
 jobs:
   test:
     timeout-minutes: 60
