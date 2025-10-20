@@ -990,3 +990,279 @@ jobs:
 ```
 
 - Your should see a clean execution :)
+
+
+## How you can use the AI to ease your work? First approach: Use Playwright MCP Server + your prefered agent 
+
+- First of all, create a ‘rules’ folder and add the ‘playwright-rules.txt’
+```
+# Playwright Testing Framework Rules & Guidelines
+
+## MANDATORY STRUCTURAL PATTERNS
+
+### 1. Page Object Model (POM) Implementation
+- **REQUIREMENT**: All page interactions MUST be encapsulated in Page Object classes
+- **LOCATION**: Store all page classes in `/playwright/pages/` directory
+- **NAMING**: Use PascalCase with descriptive names ending in "Page" (e.g., `LoginPage`, `CheckoutPage`)
+- **STRUCTURE**: Each page class MUST follow this exact pattern:
+
+```typescript
+import { Page, Locator, test } from '@playwright/test';
+
+export class [PageName]Page {
+    readonly page: Page;
+    readonly [elementName]: Locator;
+    readonly url: string = '/path';
+
+    constructor(page: Page) {
+        this.page = page;
+        this.elementName = page.locator('selector').describe('description');
+    }
+
+    async load() {
+        await test.step('Load [page] page', async () => {
+            await this.page.goto(this.url);
+        });
+    }
+
+    async waitLoad() {
+        await test.step('Wait for [page] page to load', async () => {
+            await this.[keyElement].waitFor({ state: 'visible' });
+        });
+    }
+}
+```
+
+### 2. Fixture Pattern for Dependency Injection
+- **REQUIREMENT**: ALL page objects MUST be injected via fixtures, never instantiated directly in tests
+- **LOCATION**: Define fixtures in `/playwright/fixtures/page.fixtures.ts`
+- **PATTERN**: Each page object must have a corresponding fixture:
+
+```typescript
+export const pageFixture = base.extend<PageFixture>({
+    [pageName]Page: async ({ page }, use) => {
+        await use(new [PageName]Page(page));
+    },
+});
+```
+
+- **IMPORT**: Tests must import from consolidated fixtures: `import { test, expect } from '@/playwright/fixtures/index.fixtures';`
+
+### 3. E2E Workflow Pattern
+- **REQUIREMENT**: Complex multi-page workflows MUST use the E2E utility class
+- **LOCATION**: `/playwright/utils/e2e.ts`
+- **PURPOSE**: Encapsulate complete user journeys that span multiple pages
+- **USAGE**: Inject via e2eFixture, access methods like `await e2e.processAPayment(username, password)`
+
+### 4. Test Step Wrapping (MANDATORY)
+- **REQUIREMENT**: ALL actions in page objects MUST be wrapped in `test.step()`
+- **FORMAT**: `await test.step('Clear description of action', async () => { /* action */ });`
+- **BENEFIT**: Provides detailed test execution reporting and debugging
+
+### 5. Data Management Strategy
+- **TEST DATA**: Store in `/playwright/data/` directory as JSON files
+- **ASSERTIONS**: Use `/playwright/data/assertions.json` for expected text/values
+- **SECRETS**: Use environment variables for credentials (NEVER hardcode)
+- **PAYMENT INFO**: Centralize in `/playwright/data/payment-information.json`
+
+## FILE ORGANIZATION RULES
+
+### Directory Structure (MANDATORY)
+```
+playwright/
+├── data/                    # JSON files for test data
+│   ├── assertions.json      # Expected text values
+│   └── payment-information.json
+├── fixtures/                # Playwright fixtures
+│   ├── index.fixtures.ts    # Consolidated export
+│   ├── page.fixtures.ts     # Page object fixtures
+│   └── e2e.fixtures.ts      # E2E workflow fixtures
+├── pages/                   # Page Object Model classes
+│   ├── login.ts
+│   ├── products.ts
+│   ├── cart.ts
+│   └── checkout.ts
+├── tests/                   # Test specification files
+├── types/                   # TypeScript type definitions
+└── utils/                   # Utility classes (E2E workflows)
+```
+
+### Naming Conventions
+- **Files**: Use kebab-case for test files (e.g., `payment-workflows.spec.ts`)
+- **Classes**: PascalCase (e.g., `LoginPage`, `E2E`)
+- **Methods**: camelCase with descriptive action names
+- **Locators**: camelCase describing the element (e.g., `signInBtn`, `cardNumberInput`)
+
+## LOCATOR STRATEGY
+
+### Required Locator Practices
+1. **PREFER**: `data-testid` attributes for reliable element targeting
+2. **SECONDARY**: Role-based selectors (`page.getByRole('button', { name: 'Sign In' })`)
+3. **AVOID**: CSS selectors based on styling classes
+4. **MANDATORY**: Add `.describe()` to all locators for better debugging
+
+### Locator Examples
+```typescript
+// Preferred (data-testid)
+this.cardNumberInput = page.locator('input[data-testid="card-number-input"]');
+
+// Acceptable (role-based)
+this.signInBtn = page.getByRole('button', { name: 'Sign In' }).describe('sign in button');
+
+// With description (MANDATORY)
+this.errorContainer = page.locator('[data-testid="login-error"]').describe('error container');
+```
+
+## TEST ORGANIZATION
+
+### Test File Structure (MANDATORY)
+```typescript
+import { test, expect } from '@/playwright/fixtures/index.fixtures';
+import 'dotenv/config';
+
+const secrets: NodeJS.ProcessEnv = process.env;
+
+test.describe('Feature Name', () => {
+    test('should perform specific action', async ({ pageName, anotherPage }) => {
+        // Test implementation with proper step wrapping
+    });
+});
+```
+
+### Test Writing Rules
+1. **DESCRIBE BLOCKS**: Group related functionality
+2. **TEST NAMES**: Use descriptive "should" statements
+3. **ENVIRONMENT**: Always import 'dotenv/config' for environment variables
+4. **SECRETS**: Access via `process.env` object typed as `NodeJS.ProcessEnv`
+
+## CONFIGURATION REQUIREMENTS
+
+### Playwright Config (playwright.config.ts)
+- **BASE URL**: Must be set to `http://localhost:3001`
+- **TEST DIR**: Must point to `./playwright/tests`
+- **BROWSERS**: Support Chromium, Firefox, WebKit
+- **WEB SERVER**: Auto-start with `PORT=3001 npm run dev`
+- **REPORTERS**: HTML for local, multiple reporters for CI
+
+### Environment Variables (MANDATORY)
+- `SUCCESSFUL_USERNAME`: Valid login credentials
+- `SUCCESSFUL_PASSWORD`: Valid login credentials  
+- `FAIL_USERNAME`: Credentials that trigger payment failure
+- `FAIL_PASSWORD`: Credentials that trigger payment failure
+
+## CODE QUALITY STANDARDS
+
+### TypeScript Requirements
+- **TYPES**: Define custom types in `/playwright/types/index.ts`
+- **STRICT**: All code must pass TypeScript strict mode
+- **IMPORTS**: Use path aliases (`@/playwright/...`, `@pages/...`)
+
+### Error Handling
+- **WAITS**: Always use explicit waits (`waitFor({ state: 'visible' })`)
+- **ASSERTIONS**: Use Playwright's built-in expect assertions
+- **TIMEOUTS**: Rely on Playwright's default timeouts, extend only when necessary
+
+
+## WORKFLOW PATTERNS
+
+### Authentication Pattern
+```typescript
+await test.step('Login and wait for products page', async () => {
+    await loginPage.load();
+    await loginPage.waitLoad();
+    await loginPage.submitSignInForm(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+    await productsPage.waitLoad();
+});
+```
+
+### Navigation Pattern
+```typescript
+await test.step('Navigate to cart', async () => {
+    await headerPage.clickCartLink();
+    await expect(cartPage.page).toHaveURL(cartPage.url);
+});
+```
+
+### Form Filling Pattern
+```typescript
+async fillShippingForm(name: string, email: string, address: string) {
+    await test.step('Filling the shipping form', async () => {
+        await this.nameInput.fill(name);
+        await this.emailInput.fill(email);
+        await this.addressInput.fill(address);
+        await this.continueButton.click();
+    });
+}
+```
+
+## AGENT IMPLEMENTATION GUIDELINES
+
+### When Adding New Tests:
+1. **IDENTIFY**: Determine if new page objects are needed
+2. **EXTEND**: Add new page classes following the established pattern
+3. **FIXTURE**: Register new page objects in page.fixtures.ts
+4. **DATA**: Add any new test data to appropriate JSON files
+5. **WORKFLOW**: Consider if E2E class needs new methods
+
+### When Modifying Existing Tests:
+1. **PRESERVE**: Maintain existing fixture patterns
+2. **EXTEND**: Add new locators following naming conventions
+3. **STEP**: Wrap all new actions in test.step()
+4. **DESCRIBE**: Add descriptions to new locators
+
+### Error Resolution Priority:
+1. Check locator selectors (prefer data-testid)
+2. Verify page object fixture registration
+3. Ensure proper import paths
+4. Validate environment variables
+5. Check test.step() wrapping
+
+## CRITICAL SUCCESS FACTORS
+
+### Must-Follow Rules for Agent Success:
+1. **NEVER** instantiate page objects directly in tests
+2. **ALWAYS** use fixture injection pattern
+3. **NEVER** hardcode test data in test files
+4. **ALWAYS** wrap actions in test.step()
+5. **NEVER** use unreliable selectors (avoid CSS classes)
+6. **ALWAYS** add .describe() to locators
+7. **NEVER** skip environment variable setup
+8. **ALWAYS** follow the established directory structure
+
+### Quality Checkpoints:
+- [ ] All page interactions use Page Object Model
+- [ ] All page objects are injected via fixtures
+- [ ] All actions wrapped in test.step()
+- [ ] All locators have descriptions
+- [ ] Test data externalized to JSON files
+- [ ] Environment variables properly configured
+- [ ] TypeScript types defined for custom objects
+- [ ] Import paths use aliases correctly
+
+This framework emphasizes maintainability, readability, and scalability. Adherence to these patterns ensures consistent, reliable, and debuggable test automation.
+
+```
+
+- Now, let's integrate the playwright mcp server in your code editor. In my case, it is cursor, but you can use VSCode Copilot as well.
+- Accesss to [Playwright MCP](https://github.com/microsoft/playwright-mcp)
+- Select cursor and install it
+- Let's add an extra power to the MCP Server, let's use the plugin:
+https://github.com/microsoft/playwright-mcp/releases
+- Download the zip file
+- Go to google chrome -> extensions and activate the developer mode
+- Click on "Load Unpacked" and select your unzipped folder
+- Add the following configuration to your mcp server:
+```
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--extension"
+      ],
+      "env": {
+        "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "dmG-3TY-JCnDhEYHQlr9cM16riEZX2acD0IuM-vRP_s"
+      }
+    }
+```
+
+
