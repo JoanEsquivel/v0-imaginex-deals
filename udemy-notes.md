@@ -1322,5 +1322,9 @@ https://github.com/microsoft/playwright-mcp/releases
 
 ## Improvement opportunities
 - Add describe to the page objects to improve report readability
+- Consider before hook if neccesarry after the agent create a new test
 
+## Playwright now have agents.
+
+[Agent docs](https://playwright.dev/docs/test-agents)
 
