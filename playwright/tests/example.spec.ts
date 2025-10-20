@@ -1,18 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@/playwright/fixtures/index.fixtures';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
-
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+test.describe('Login Workflow', () => {
+  test('should login with valid credentials', async ({ loginPage }) => {
+    await loginPage.load();
+    await loginPage.waitLoad();
+    await loginPage.submitSignInForm('test_user', 'test_pass');
+    await expect(loginPage.page).toHaveURL('/products');
+  });
 });

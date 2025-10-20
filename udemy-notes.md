@@ -23,3 +23,106 @@ Running 6 tests using 4 workers
 How you can interact with web elements using Playwright? Playwright recommends some [built in locators](https://playwright.dev/docs/locators) that I recommend to use, if your project allows you to use them. However, you can also use the following strategies: 
 - [CSS Locators - Full Guideline](https://youtu.be/_7bPbDAz-qg?si=ZqNNhTkyTMAH7SB6)
 - [XPath Locators - Full Guideline](https://youtu.be/XyBxEnyBb0A?si=psy6xm-yn_hGeoiT)
+
+
+## Login Test Logic Implementation
+- Create a 'pages' folder under 'playwright'
+- Create a new 'login.ts' file under the 'pages' folder
+- Fill the page object with the expected props and behaviors
+```
+import { Page, Locator, test } from '@playwright/test';
+
+export class LoginPage {
+    readonly page: Page;
+    readonly username: Locator;
+    readonly password: Locator;
+    readonly signInBtn: Locator;
+    readonly errorContainer: Locator;
+
+    readonly url: string = '/login';
+
+    constructor(page: Page) {
+        this.page = page;
+        this.username = page.getByRole('textbox', { name: 'Username' });
+        this.password = page.getByRole('textbox', { name: 'Password' }).describe('password input');
+        this.signInBtn = page.getByRole('button', { name: 'Sign In' }).describe('sign in button');
+        this.errorContainer = page.locator('[data-testid="login-error"]').describe('error container');
+    }
+
+    async load() {
+        await test.step('Load login page', async () => {
+            await this.page.goto(this.url);
+        });
+    }
+
+    async waitLoad() {
+        await test.step('Wait for login page to load', async () => {
+            await this.username.waitFor({ state: 'visible' });
+        });
+    }
+
+    async submitSignInForm(username: string, password: string) {
+        await test.step('Fill sign in form and click sign in button', async () => {
+            await this.username.fill(username);
+            await this.password.fill(password);
+            await this.signInBtn.click();
+        });
+    }
+}
+```
+- Create a 'fixtures' folder
+- Under the 'fixtures' folder, create a new file named 'index.fixtures.ts' and 'page.fixture.ts'
+- In our index.fixtures.ts let's pull the logic to merge our fixture in the index:
+```
+import { mergeTests } from '@playwright/test';
+import { pageFixture } from '@/playwright/fixtures/page.fixtures';
+
+export const test = mergeTests(pageFixture);
+
+export { expect, request } from '@playwright/test';
+```
+- Expect a couple of warnings, it is expected.
+- Now, let's construct the pages fixture:
+
+```
+  import { test as base } from '@playwright/test';
+
+  import { LoginPage } from '@/playwright/pages/login';
+
+  // Declare page fixtures
+  type PageFixture = {
+      loginPage: LoginPage;
+  };
+
+  export const pageFixture = base.extend<PageFixture>({
+      loginPage: async ({ page }, use) => {
+          await page.goto('/login');
+          await use(new LoginPage(page));
+      }
+  });
+```
+
+- We are ready to create implement our login automated flow
+- Enable the base url in the playwright.config.ts
+```
+  baseURL: 'http://localhost:3001',
+```
+
+- Change the example.spec.ts file with the following code:
+```
+  test.describe('Login Workflow', () => {
+    test('should login with valid credentials', async ({ loginPage }) => {
+      await loginPage.load();
+      await loginPage.waitLoad();
+      await loginPage.submitSignInForm('test_user', 'test_pass');
+      await expect(loginPage.page).toHaveURL('/products');
+    });
+  });
+```
+
+- Run your test in UI mode  to see the results:
+```
+pnpm exec playwright test --ui
+```
+
+- Run it without the UI mode and check the steps documented in the report
