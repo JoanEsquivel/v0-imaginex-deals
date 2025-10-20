@@ -749,3 +749,121 @@ test.describe('Payment Workflows', () => {
     reuseExistingServer: !process.env.CI,
   },
 ```
+
+## I would recommend to not use hardcoded test data. Try to always use a data driven framework approach
+- Let's create a 'data' folder under 'playwright'
+- Create a "payment-information.json" 
+```
+{
+    "shippingInformation": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "address": "123 Main St, Anytown, USA"
+    },
+    "paymentInformation": {
+        "cardNumber": "1234567890123456",
+        "cardName": "John Doe",
+        "expiryDate": "01/2025",
+        "cvv": "123"
+    }
+}
+```
+
+- Ingest the payment information from that JSON file
+```
+e2e.ts
+import { Page, test, expect } from '@playwright/test';
+import { LoginPage } from '@/playwright/pages/login';
+import { ProductsPage } from '@pages/products';
+import { HeaderPage } from '@pages/header';
+import { CartPage } from '@pages/cart';
+import { CheckoutPage } from '@pages/checkout';
+
+import paymentInformation from '@/playwright/data/payment-information.json';
+
+export class E2E {
+
+    private loginPage: LoginPage;
+    private productsPage: ProductsPage;
+    private headerPage: HeaderPage;
+    private cartPage: CartPage;
+    private checkoutPage: CheckoutPage;
+    private page: Page;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.loginPage = new LoginPage(page);
+        this.productsPage = new ProductsPage(page);
+        this.headerPage = new HeaderPage(page);
+        this.cartPage = new CartPage(page);
+        this.checkoutPage = new CheckoutPage(page);
+    }
+
+    // Costruct e2e flows using the page objects in one simple class
+    async processAPayment(username: string, password: string) {
+        await test.step('Process a payment workflow', async () => {
+            await test.step('Login and wait for products page', async () => {
+                await this.loginPage.load();
+                await this.loginPage.waitLoad();
+                await this.loginPage.submitSignInForm(username, password);
+                await this.productsPage.waitLoad();
+            });
+            await test.step('Adding a product to the cart', async () => {
+                await this.productsPage.waitLoad();
+                await expect(this.productsPage.page).toHaveURL(this.productsPage.url);
+                await this.productsPage.addFirstProductToCart();
+            });
+            await test.step('Accessing the cart page', async () => {
+                await this.headerPage.clickCartLink();
+                await expect(this.cartPage.page).toHaveURL(this.cartPage.url);
+            });
+            await test.step('Clicking on the checkout button', async () => {
+                await this.cartPage.clickCheckoutButton();
+                await expect(this.checkoutPage.page).toHaveURL(this.checkoutPage.url);
+            });
+            await test.step('Filling the shipping form', async () => {
+                await this.checkoutPage.fillShippingForm(paymentInformation.shippingInformation.name, paymentInformation.shippingInformation.email, paymentInformation.shippingInformation.address);
+            });
+            await test.step('Filling the payment form', async () => {
+                await this.checkoutPage.fillPaymentForm(paymentInformation.paymentInformation.cardNumber, paymentInformation.paymentInformation.cardName, paymentInformation.paymentInformation.expiryDate, paymentInformation.paymentInformation.cvv);
+            });
+        })
+    }
+}
+```
+- Let's do the same with the assertions of our tests
+- Create a new json under data:
+```
+assertions.json
+{
+    "orderPlacedConfirmation": "Order placed successfully!",
+    "paymentError": "Payment declined. This test user always fails payments."
+}
+```
+
+- Implement the assertions from the JSON in the test
+```
+import { test, expect } from '@/playwright/fixtures/index.fixtures';
+import 'dotenv/config'
+import assertions from '@/playwright/data/assertions.json';
+
+const secrets: NodeJS.ProcessEnv = process.env;
+
+
+
+test.describe('Payment Workflows', () => {
+  test('should process a successful payment', async ({ e2e, checkoutPage }) => {
+    await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+    // Wait for the order to be placed - Custom logic for this scenario
+    await checkoutPage.transactionId.waitFor({ state: 'visible' });
+    await expect(checkoutPage.orderPlacedConfirmation).toHaveText(assertions.orderPlacedConfirmation);
+  });
+
+  test('should process a failed payment', async ({ e2e, checkoutPage }) => {
+    await e2e.processAPayment(secrets.FAIL_USERNAME, secrets.FAIL_PASSWORD);
+    await checkoutPage.paymentError.waitFor({ state: 'visible' })
+    await expect(checkoutPage.paymentError).toHaveText(assertions.paymentError);
+  });
+});
+
+```

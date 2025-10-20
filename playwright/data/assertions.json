@@ -1,0 +1,4 @@
+{
+    "orderPlacedConfirmation": "Order placed successfully!",
+    "paymentError": "Payment declined. This test user always fails payments."
+}
