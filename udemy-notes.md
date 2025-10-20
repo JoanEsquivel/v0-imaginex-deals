@@ -393,3 +393,347 @@ test.describe('Payment Workflows', () => {
 });
 
 ```
+
+
+## Finish the payment workflow test
+
+- Let's map the cart page object. Create 'cart.ts' under 'playwright/pages'
+```
+import { Page, Locator, test } from '@playwright/test';
+
+export class CartPage {
+    readonly page: Page;
+    readonly checkoutButton: Locator;
+    readonly cartTotal: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.checkoutButton = page.locator('a[href="/checkout"]');
+        this.cartTotal = page.locator('[data-testid="cart-total"]');
+    }
+    async clickCheckoutButton() {
+        await test.step('Clicking on the checkout button', async () => {
+            await this.checkoutButton.click();
+        });
+    }
+}
+```
+
+- Let's map it as part of the page fixtures
+```
+import { test as base } from '@playwright/test';
+
+import { LoginPage } from '@/playwright/pages/login';
+import { ProductsPage } from '@/playwright/pages/products';
+import { HeaderPage } from '@/playwright/pages/header';
+import { CartPage } from '@/playwright/pages/cart';
+
+// Declare page fixtures
+type PageFixture = {
+    loginPage: LoginPage;
+    productsPage: ProductsPage;
+    headerPage: HeaderPage;
+    cartPage: CartPage;
+};
+
+export const pageFixture = base.extend<PageFixture>({
+    loginPage: async ({ page }, use) => {
+        await use(new LoginPage(page));
+    },
+    productsPage: async ({ page }, use) => {
+        await use(new ProductsPage(page));
+    },
+    headerPage: async ({ page }, use) => {
+        await use(new HeaderPage(page));
+    },
+    cartPage: async ({ page }, use) => {
+        await use(new CartPage(page));
+    }
+});
+```
+
+- Let's implement the click on the checkout button in the helper, and make some small extra configurations: 
+
+```
+import { Page, test, expect } from '@playwright/test';
+import { LoginPage } from '@/playwright/pages/login';
+import { ProductsPage } from '@pages/products';
+import { HeaderPage } from '@pages/header';
+import { CartPage } from '@pages/cart';
+
+export class E2E {
+
+    private loginPage: LoginPage;
+    private productsPage: ProductsPage;
+    private headerPage: HeaderPage;
+    private cartPage: CartPage;
+    private page: Page;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.loginPage = new LoginPage(page);
+        this.productsPage = new ProductsPage(page);
+        this.headerPage = new HeaderPage(page);
+        this.cartPage = new CartPage(page);
+    }
+
+    // Costruct e2e flows using the page objects in one simple class
+    async processAPayment(username: string, password: string) {
+        await test.step('Process a successful payment', async () => {
+            await test.step('Login and wait for products page', async () => {
+                await this.loginPage.load();
+                await this.loginPage.waitLoad();
+                await this.loginPage.submitSignInForm(username, password);
+                await this.productsPage.waitLoad();
+            });
+            await test.step('Adding a product to the cart', async () => {
+                await this.productsPage.waitLoad();
+                await expect(this.productsPage.page).toHaveURL(this.productsPage.url);
+                await this.productsPage.addFirstProductToCart();
+            });
+            await test.step('Accessing the cart page', async () => {
+                await this.headerPage.clickCartLink();
+                await expect(this.cartPage.page).toHaveURL(this.cartPage.url);
+            });
+            await test.step('Clicking on the checkout button', async () => {
+                await this.cartPage.clickCheckoutButton();
+            });
+        })
+
+    }
+}
+
+```
+
+- Let's run our test script, and get rid of the assertion: 
+
+```
+test.describe('Payment Workflows', () => {
+  test('should process a successful payment', async ({ e2e, headerPage }) => {
+    await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+  });
+
+  test('should process a failed payment', async ({ e2e, headerPage }) => {
+     await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+  });
+});
+```
+
+- Let's map the checkout page
+
+```
+checkout.ts
+import { Page, Locator, test } from '@playwright/test';
+
+export class CheckoutPage {
+    readonly page: Page;
+    // Shipping form
+    readonly nameInput: Locator;
+    readonly emailInput: Locator;
+    readonly addressInput: Locator;
+    readonly continueButton: Locator;
+
+    // Payment form
+    readonly cardNumberInput: Locator;
+    readonly cardNameInput: Locator;
+    readonly expiryDateInput: Locator;
+    readonly cvvInput: Locator;
+    readonly placeOrderButton: Locator;
+
+    // Order placed confirmation
+    readonly orderPlacedConfirmation: Locator;
+    readonly transactionId: Locator;
+
+    // Error messages
+    readonly paymentError: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        // Shipping form
+        this.nameInput = page.locator('input[data-testid="shipping-name"]');
+        this.emailInput = page.locator('input[data-testid="shipping-email"]');
+        this.addressInput = page.locator('[data-testid="shipping-address"]');
+        this.continueButton = page.locator('button[data-testid="continue-to-payment-button"]');
+        // Payment form
+        this.cardNumberInput = page.locator('input[data-testid="card-number-input"]');
+        this.cardNameInput = page.locator('input[data-testid="card-name-input"]');
+        this.expiryDateInput = page.locator('input[data-testid="expiry-date-input"]');
+        this.cvvInput = page.locator('input[data-testid="cvv-input"]');
+        this.placeOrderButton = page.locator('button[data-testid="place-order-button"]');
+        // Order placed confirmation
+        this.orderPlacedConfirmation = page.locator('h2');
+        this.transactionId = page.locator('[data-testid="transaction-id"]');
+        // Error messages
+        this.paymentError = page.locator('[data-testid="payment-error"]');
+    }
+    readonly url: string = '/checkout';
+
+    async fillShippingForm(name: string, email: string, address: string) {
+        await test.step('Filling the shipping form', async () => {
+            await this.nameInput.fill(name);
+            await this.emailInput.fill(email);
+            await this.addressInput.fill(address);
+            await this.continueButton.click();
+        });
+    }
+    async fillPaymentForm(cardNumber: string, cardName: string, expiryDate: string, cvv: string) {
+        await test.step('Filling the payment form', async () => {
+            await this.cardNumberInput.fill(cardNumber);
+            await this.cardNameInput.fill(cardName);
+            await this.expiryDateInput.fill(expiryDate);
+            await this.cvvInput.fill(cvv);
+            await this.placeOrderButton.click();
+        });
+    }
+}
+```
+
+- We need to map the objects in the fixture
+```
+page.fixtures.ts
+import { test as base } from '@playwright/test';
+
+import { LoginPage } from '@/playwright/pages/login';
+import { ProductsPage } from '@/playwright/pages/products';
+import { HeaderPage } from '@/playwright/pages/header';
+import { CartPage } from '@/playwright/pages/cart';
+import { CheckoutPage } from '@/playwright/pages/checkout';
+
+// Declare page fixtures
+type PageFixture = {
+    loginPage: LoginPage;
+    productsPage: ProductsPage;
+    headerPage: HeaderPage;
+    cartPage: CartPage;
+    checkoutPage: CheckoutPage;
+};
+
+export const pageFixture = base.extend<PageFixture>({
+    loginPage: async ({ page }, use) => {
+        await use(new LoginPage(page));
+    },
+    productsPage: async ({ page }, use) => {
+        await use(new ProductsPage(page));
+    },
+    headerPage: async ({ page }, use) => {
+        await use(new HeaderPage(page));
+    },
+    cartPage: async ({ page }, use) => {
+        await use(new CartPage(page));
+    },
+    checkoutPage: async ({ page }, use) => {
+        await use(new CheckoutPage(page));
+    }
+});
+```
+
+- Let's enhance the the workflow
+
+```
+import { Page, test, expect } from '@playwright/test';
+import { LoginPage } from '@/playwright/pages/login';
+import { ProductsPage } from '@pages/products';
+import { HeaderPage } from '@pages/header';
+import { CartPage } from '@pages/cart';
+import { CheckoutPage } from '@pages/checkout';
+
+export class E2E {
+
+    private loginPage: LoginPage;
+    private productsPage: ProductsPage;
+    private headerPage: HeaderPage;
+    private cartPage: CartPage;
+    private checkoutPage: CheckoutPage;
+    private page: Page;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.loginPage = new LoginPage(page);
+        this.productsPage = new ProductsPage(page);
+        this.headerPage = new HeaderPage(page);
+        this.cartPage = new CartPage(page);
+        this.checkoutPage = new CheckoutPage(page);
+    }
+
+    // Costruct e2e flows using the page objects in one simple class
+    async processAPayment(username: string, password: string) {
+        await test.step('Process a successful payment', async () => {
+            await test.step('Login and wait for products page', async () => {
+                await this.loginPage.page.waitForTimeout(500); // Small delay
+                await this.loginPage.load();
+                await this.loginPage.waitLoad();
+                await this.loginPage.submitSignInForm(username, password);
+                await this.productsPage.waitLoad();
+            });
+            await test.step('Adding a product to the cart', async () => {
+                await this.productsPage.waitLoad();
+                await expect(this.productsPage.page).toHaveURL(this.productsPage.url);
+                await this.productsPage.addFirstProductToCart();
+            });
+            await test.step('Accessing the cart page', async () => {
+                await this.headerPage.clickCartLink();
+                await expect(this.cartPage.page).toHaveURL(this.cartPage.url);
+            });
+            await test.step('Clicking on the checkout button', async () => {
+                await this.cartPage.clickCheckoutButton();
+                await expect(this.checkoutPage.page).toHaveURL(this.checkoutPage.url);
+            });
+            await test.step('Filling the shipping form', async () => {
+                await this.checkoutPage.fillShippingForm('testName', 'test@test.com', 'test address');
+            });
+            await test.step('Filling the payment form', async () => {
+                await this.checkoutPage.fillPaymentForm('1234 1234 1234 1234', 'testNae', '02/30', '123');
+            });
+        })
+    }
+}
+```
+
+- I need to implement the secrets for the fail payment scenario. So, I will add the secrets to the .env file
+```
+.env file
+SUCCESSFUL_USERNAME="test_user"
+SUCCESSFUL_PASSWORD="test_pass"
+FAIL_USERNAME="test_failure"
+FAIL_PASSWORD="test_pass"
+```
+
+- I need to update the types
+```
+playwright/types/index.ts
+declare namespace NodeJS {
+  interface ProcessEnv {
+    SUCCESSFUL_USERNAME: string;
+    SUCCESSFUL_PASSWORD: string;
+    FAIL_USERNAME: string;
+    FAIL_PASSWORD: string;
+  }
+}
+```
+
+- And then, let's implement the test logic for the negative scenario too :) 
+
+```
+import { test, expect } from '@/playwright/fixtures/index.fixtures';
+import 'dotenv/config'
+
+const secrets: NodeJS.ProcessEnv = process.env;
+
+
+
+test.describe('Payment Workflows', () => {
+  test('should process a successful payment', async ({ e2e, checkoutPage }) => {
+    await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
+    // Wait for the order to be placed - Custom logic for this scenario
+    await checkoutPage.transactionId.waitFor({ state: 'visible' });
+    await expect(checkoutPage.orderPlacedConfirmation).toHaveText('Order placed successfully!');
+  });
+
+  test('should process a failed payment', async ({ e2e, checkoutPage }) => {
+    await e2e.processAPayment(secrets.FAIL_USERNAME, secrets.FAIL_PASSWORD);
+    await checkoutPage.paymentError.waitFor({state: 'visible'})
+    await expect(checkoutPage.paymentError).toHaveText('Payment declined. This test user always fails payments.');
+  });
+});
+
+```
