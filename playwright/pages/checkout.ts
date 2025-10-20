@@ -25,21 +25,21 @@ export class CheckoutPage {
     constructor(page: Page) {
         this.page = page;
         // Shipping form
-        this.nameInput = page.locator('input[data-testid="shipping-name"]');
-        this.emailInput = page.locator('input[data-testid="shipping-email"]');
-        this.addressInput = page.locator('[data-testid="shipping-address"]');
-        this.continueButton = page.locator('button[data-testid="continue-to-payment-button"]');
+        this.nameInput = page.locator('input[data-testid="shipping-name"]').describe('name input');
+        this.emailInput = page.locator('input[data-testid="shipping-email"]').describe('email input');
+        this.addressInput = page.locator('[data-testid="shipping-address"]').describe('address input');
+        this.continueButton = page.locator('button[data-testid="continue-to-payment-button"]').describe('continue to payment button');
         // Payment form
-        this.cardNumberInput = page.locator('input[data-testid="card-number-input"]');
-        this.cardNameInput = page.locator('input[data-testid="card-name-input"]');
+        this.cardNumberInput = page.locator('input[data-testid="card-number-input"]').describe('card number input');
+        this.cardNameInput = page.locator('input[data-testid="card-name-input"]').describe('card name input');
         this.expiryDateInput = page.locator('input[data-testid="expiry-date-input"]');
-        this.cvvInput = page.locator('input[data-testid="cvv-input"]');
+        this.cvvInput = page.locator('input[data-testid="cvv-input"]').describe('cvv input');
         this.placeOrderButton = page.locator('button[data-testid="place-order-button"]');
         // Order placed confirmation
-        this.orderPlacedConfirmation = page.locator('h2');
-        this.transactionId = page.locator('[data-testid="transaction-id"]');
+        this.orderPlacedConfirmation = page.locator('h2').describe('order placed confirmation').describe('confirmation message');
+        this.transactionId = page.locator('[data-testid="transaction-id"]').describe('transaction id').describe('transaction id');
         // Error messages
-        this.paymentError = page.locator('[data-testid="payment-error"]');
+        this.paymentError = page.locator('[data-testid="payment-error"]').describe('payment error message');
     }
     readonly url: string = '/checkout';
 

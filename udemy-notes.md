@@ -1317,5 +1317,10 @@ https://github.com/microsoft/playwright-mcp/releases
       }
     }
 ```
+- Run the 'playwright/rules/agent-request-example.txt' in your prefered agent
+
+
+## Improvement opportunities
+- Add describe to the page objects to improve report readability
 
 

@@ -7,8 +7,8 @@ export class HeaderPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.cartLink = page.locator('a[href="/cart"]');
-        this.signOutBtn = page.locator('header button[class="font-bold"]:nth-child(1)');
+        this.cartLink = page.locator('a[href="/cart"]').describe('cart link');
+        this.signOutBtn = page.locator('header button[class="font-bold"]:nth-child(1)').describe('sign out button');
     }
     async clickCartLink() {
         await test.step('Clicking on the cart link', async () => {

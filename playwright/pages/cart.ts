@@ -7,8 +7,8 @@ export class CartPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.checkoutButton = page.locator('a[href="/checkout"]');
-        this.cartTotal = page.locator('[data-testid="cart-total"]');
+        this.checkoutButton = page.locator('a[href="/checkout"]').describe('checkout button');
+        this.cartTotal = page.locator('[data-testid="cart-total"]').describe('cart total');
     }
 
     readonly url: string = '/cart';
