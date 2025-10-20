@@ -4,8 +4,6 @@ import assertions from '@/playwright/data/assertions.json';
 
 const secrets: NodeJS.ProcessEnv = process.env;
 
-
-
 test.describe('Payment Workflows', () => {
   test('should process a successful payment', async ({ e2e, checkoutPage }) => {
     await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
