@@ -737,3 +737,15 @@ test.describe('Payment Workflows', () => {
 });
 
 ```
+
+
+## Before we move on, I want Playwright to start the web site as localhost automatically, before the tests are executed. How to do it? 
+- In the playwright.config.ts use the following code snipet: 
+```
+/* Run your local dev server before starting the tests */
+  webServer: {
+    command: 'PORT=3001 npm run dev',
+    url: 'http://localhost:3001',
+    reuseExistingServer: !process.env.CI,
+  },
+```

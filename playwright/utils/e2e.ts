@@ -27,7 +27,6 @@ export class E2E {
     async processAPayment(username: string, password: string) {
         await test.step('Process a payment workflow', async () => {
             await test.step('Login and wait for products page', async () => {
-                await this.loginPage.page.waitForTimeout(500); // Small delay
                 await this.loginPage.load();
                 await this.loginPage.waitLoad();
                 await this.loginPage.submitSignInForm(username, password);
