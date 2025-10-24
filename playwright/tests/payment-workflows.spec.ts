@@ -4,12 +4,15 @@ import 'dotenv/config'
 const secrets: NodeJS.ProcessEnv = process.env;
 
 test.describe('Payment Workflows', () => {
-  test('should process a successful payment', async ({ e2e, headerPage }) => {
+  test('should process a successful payment', async ({ e2e, checkoutPage }) => {
     await e2e.processAPayment(secrets.SUCCESSFUL_USERNAME, secrets.SUCCESSFUL_PASSWORD);
-    await expect(headerPage.page).toHaveURL(headerPage.url);
+    await checkoutPage.transactionId.waitFor({ state: 'visible' });
+    await expect(checkoutPage.orderPlacedConfirmation).toHaveText('Order placed successfully!');
+
   });
-  test('should process a failed payment', async ({ e2e, headerPage }) => {
+  test('should process a failed payment', async ({ e2e, checkoutPage }) => {
     await e2e.processAPayment(secrets.FAILED_USERNAME, secrets.FAILED_PASSWORD);
-    await expect(headerPage.page).toHaveURL(headerPage.url);
+    await checkoutPage.paymentError.waitFor({ state: 'visible' })
+    await expect(checkoutPage.paymentError).toHaveText('Payment declined. This test user always fails payments.');
   });
 })
