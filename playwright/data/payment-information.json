@@ -1,0 +1,13 @@
+{
+    "shippingInformation": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "address": "123 Main St, Anytown, USA"
+    },
+    "paymentInformation": {
+        "cardNumber": "1234567890123456",
+        "cardName": "John Doe",
+        "expiryDate": "01/2025",
+        "cvv": "123"
+    }
+}

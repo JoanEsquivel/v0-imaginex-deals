@@ -4,6 +4,7 @@ import { ProductsPage } from '@pages/products';
 import { HeaderPage } from '@pages/header';
 import { CartPage } from '@pages/cart';
 import { CheckoutPage } from '@pages/checkout';
+import paymentInformation from '@/playwright/data/payment-information.json';
 
 export class E2E {
 
@@ -47,10 +48,10 @@ export class E2E {
                 await expect(this.checkoutPage.page).toHaveURL(this.checkoutPage.url);
             });
             await test.step('Filling the shipping form', async () => {
-                await this.checkoutPage.fillShippingForm('testName', 'test@test.com', 'test address');
+                await this.checkoutPage.fillShippingForm(paymentInformation.shippingInformation.name, paymentInformation.shippingInformation.email, paymentInformation.shippingInformation.address);
             });
             await test.step('Filling the payment form', async () => {
-                await this.checkoutPage.fillPaymentForm('1234 1234 1234 1234', 'testNae', '02/30', '123');
+                await this.checkoutPage.fillPaymentForm(paymentInformation.paymentInformation.cardNumber, paymentInformation.paymentInformation.cardName, paymentInformation.paymentInformation.expiryDate, paymentInformation.paymentInformation.cvv);
             });
         })
     }
