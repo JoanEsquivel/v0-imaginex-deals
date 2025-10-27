@@ -4,6 +4,7 @@ export class HeaderPage {
     readonly page: Page;
     readonly cartLink: Locator;
     readonly signOutBtn: Locator;
+    readonly returnsOrdersLink: Locator;
 
     readonly url: string = '/cart';
 
@@ -11,6 +12,7 @@ export class HeaderPage {
         this.page = page;
         this.cartLink = page.locator('a[href="/cart"]').describe('cart link');
         this.signOutBtn = page.locator('header button[class="font-bold"]:nth-child(1)').describe('sign out button');
+        this.returnsOrdersLink = page.locator('a[href="/orders"]').describe('returns and orders link');
     }
     async clickCartLink() {
         await test.step('Click cart link', async () => {
@@ -21,6 +23,12 @@ export class HeaderPage {
     async clickSignOutBtn() {
         await test.step('Clicking on the sign out button', async () => {
             await this.signOutBtn.click();
+        });
+    }
+
+    async clickReturnsOrdersLink() {
+        await test.step('Click returns and orders link', async () => {
+            await this.returnsOrdersLink.click();
         });
     }
 
